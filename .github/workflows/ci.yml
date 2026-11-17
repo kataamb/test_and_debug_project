@@ -7,82 +7,126 @@ on:
     branches: [ main, master ]
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
-  run-tests:
+  # ==================== ЭТАП 1: UNIT ТЕСТЫ ====================
+  unit-tests:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Restore Allure history for Trend chart
+      - name: Run Unit Tests (5 workers)
+        working-directory: ./src
+        run: |
+          mkdir -p allure-results
+          docker compose -f docker-compose.test.yaml run --rm --no-deps --build tests \
+            pytest tests/unit -n 5 -v --alluredir=/app/allure-results
+
+      - name: Upload Unit Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-unit
+          path: src/allure-results/
+
+  # ==================== ЭТАП 2: INTEGRATION ТЕСТЫ ====================
+  integration-tests:
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Integration Tests (5 workers)
+        working-directory: ./src
+        run: |
+          mkdir -p allure-results
+          docker compose -f docker-compose.test.yaml up -d --build adverts_db
+          docker compose -f docker-compose.test.yaml run --rm tests \
+            pytest tests/integration -n 5 -v --alluredir=/app/allure-results
+
+      - name: Upload Integration Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-integration
+          path: src/allure-results/
+
+      - name: Cleanup containers
+        if: always()
+        working-directory: ./src
+        run: docker compose -f docker-compose.test.yaml down -v
+
+  # ==================== ЭТАП 3: E2E ТЕСТЫ ====================
+  e2e-tests:
+    runs-on: ubuntu-latest
+    needs: integration-tests
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run E2E Tests (5 parallel developers)
+        working-directory: ./src
+        run: |
+          mkdir -p allure-results
+          docker compose -f docker-compose.test.yaml up -d --build adverts_db app_test
+          docker compose -f docker-compose.test.yaml run --rm tests \
+            pytest tests/e2e -n 5 --dist=worksteal -v --alluredir=/app/allure-results
+
+      - name: Upload E2E Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-e2e
+          path: src/allure-results/
+
+      - name: Cleanup containers
+        if: always()
+        working-directory: ./src
+        run: docker compose -f docker-compose.test.yaml down -v
+
+  # ==================== ЭТАП 4: ALLURE ОТЧЕТ + TREND ====================
+  report:
+    runs-on: ubuntu-latest
+    needs: [unit-tests, integration-tests, e2e-tests]
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Restore Allure History for Trend
         uses: actions/cache@v4
         with:
-          path: src/allure-history
+          path: allure-history
           key: allure-history-${{ github.run_number }}
           restore-keys: |
             allure-history-
 
-      - name: Prepare allure-results directory
+      - name: Download test artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+
+      - name: Merge results and Generate Allure Report
         run: |
-          mkdir -p src/allure-results
-          if [ -d "src/allure-history/history" ]; then
-            cp -r src/allure-history/history src/allure-results/history
+          npm install -g allure-commandline
+          mkdir -p merged-results
+          
+          # Подтягиваем историю прошлых запусков для графика Trend
+          if [ -d "allure-history/history" ]; then
+            cp -r allure-history/history merged-results/history
           fi
+          
+          # Собираем результаты со всех прошедших этапов
+          for dir in $(find artifacts -type d -name "allure-results*"); do
+            cp -rn "$dir"/. merged-results/
+          done
+          
+          allure generate merged-results/ -o allure-report --clean
+          
+          # Обновляем историю для следующего запуска
+          mkdir -p allure-history
+          rm -rf allure-history/history
+          cp -r allure-report/history allure-history/history
 
-      - name: Start PostgreSQL and Backend containers
-        working-directory: src
-        run: |
-          docker compose -f docker-compose.test.yaml up -d --build adverts_db app_test
-
-      - name: Stage 1 - Run Unit Tests (5 workers)
-        id: unit
-        working-directory: src
-        run: |
-          docker compose -f docker-compose.test.yaml run --rm tests \
-            pytest tests/unit -n 5 -v --alluredir=/app/allure-results
-
-      - name: Stage 2 - Run Integration Tests (5 workers)
-        id: integration
-        if: success()
-        working-directory: src
-        run: |
-          docker compose -f docker-compose.test.yaml run --rm tests \
-            pytest tests/integration -n 5 -v --alluredir=/app/allure-results
-
-      - name: Stage 3 - Run E2E Tests (5 parallel developers)
-        id: e2e
-        if: success()
-        working-directory: src
-        run: |
-          docker compose -f docker-compose.test.yaml run --rm tests \
-            pytest tests/e2e -n 5 --dist=worksteal -v --alluredir=/app/allure-results
-
-      - name: Generate Allure Report with Trend
-        if: always()
-        run: |
-          ALLURE_VERSION="2.32.0"
-          curl -sL "https://github.com{ALLURE_VERSION}/allure-${ALLURE_VERSION}.tgz" -o allure.tgz
-          tar -xzf allure.tgz -C /opt/
-          sudo ln -sf /opt/allure-${ALLURE_VERSION}/bin/allure /usr/local/bin/allure
-          allure generate src/allure-results -o src/allure-report --clean
-          mkdir -p src/allure-history
-          rm -rf src/allure-history/history
-          cp -r src/allure-report/history src/allure-history/history
-      
-
-      - name: Upload Allure Report Artifact
-        if: always()
+      - name: Upload Final Allure Report
         uses: actions/upload-artifact@v4
         with:
           name: allure-report-${{ github.run_number }}
-          path: src/allure-report
-
-      - name: Stop containers
-        if: always()
-        working-directory: src
-        run: |
-          docker compose -f docker-compose.test.yaml down -v
+          path: allure-report/
