@@ -1,0 +1,1 @@
+{'id': UUID('c7a01fcd-a87d-4ebb-bc0e-8c65caa9b5eb'), 'content': 'base test content', 'description': 'base test description', 'id_category': UUID('6efabcd7-1f8f-430e-89d9-50f4b7b54ec1'), 'price': 500, 'id_seller': UUID('b4458a5a-376b-4b4e-8965-14ff0402c32d'), 'date_created': datetime.datetime(2026, 11, 17, 23, 38, 11, 403307)}
