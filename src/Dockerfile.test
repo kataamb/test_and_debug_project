@@ -1,0 +1,37 @@
+FROM python:3.13-slim
+
+WORKDIR /app
+
+# Устанавливаем Poetry
+RUN pip install --no-cache-dir poetry
+
+# Копируем зависимости и ставим их в системный Python контейнера с группой dev
+COPY pyproject.toml poetry.lock ./
+RUN poetry config virtualenvs.create false \
+    && poetry install --no-root --no-interaction --no-ansi --with dev
+
+# Копируем код и тесты (выборочно, чтобы не тащить локальный .venv)
+COPY ./abstract_repositories ./abstract_repositories
+COPY ./controllers ./controllers
+COPY ./core ./core
+COPY ./dto ./dto
+COPY ./i_sql_builders ./i_sql_builders
+COPY ./models ./models
+COPY ./repositories ./repositories
+COPY ./services ./services
+COPY ./sql_builders ./sql_builders
+COPY ./templates ./templates
+COPY ./static ./static
+COPY ./tests ./tests
+COPY ./auth ./auth
+COPY ./api_v1 ./api_v1
+COPY ./api_v2 ./api_v2
+COPY ./schemas ./schemas
+COPY ./errors ./errors
+COPY config.json log_config.json main.py service_locator.py pytest.ini ./
+
+ENV PYTHONPATH=/app
+ENV PYTHONUNBUFFERED=1
+
+#CMD ["pytest", "tests/unit", "-v", "--alluredir=/app/allure-results"]
+CMD ["pytest", "-v", "--alluredir=/app/allure-results"]

@@ -1,0 +1,63 @@
+services:
+  adverts_db:
+    image: postgres:16-alpine
+    container_name: adverts_db_tests_container
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: adverts_db
+    ports:
+      - "5438:5432"
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+      - ./tests/test_data/db_scripts/create_tables_and_copy_data.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d adverts_db"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+  app_test:
+    build: .
+    container_name: adverts_app_test_container
+    depends_on:
+      adverts_db:
+        condition: service_healthy
+    environment:
+      - DB_HOST=adverts_db
+      - DB_PORT=5432
+      - DB_NAME=adverts_db
+      - DB_USER=postgres
+      - DB_PASSWORD=1234
+      - LOG_LEVEL=DEBUG
+      - LOG_CONFIG=./log_config.json
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./logs_test:/app/logs
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/openapi.json')\""]
+      interval: 3s
+      timeout: 3s
+      retries: 15
+
+  tests:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    container_name: adverts_tests_runner
+    depends_on:
+      adverts_db:
+        condition: service_healthy
+      app_test:
+        condition: service_healthy
+    environment:
+      - TEST_DB_URL=postgresql+asyncpg://postgres:1234@adverts_db:5432/adverts_db
+      - APP_URL=http://app_test:8000
+    volumes:
+      - ./allure-results:/app/allure-results
+
+volumes:
+  postgres_test_data:
+    name: adverts_postgres_test_data
