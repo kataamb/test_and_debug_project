@@ -1,0 +1,11 @@
+/data_volumes/
+.venv
+.idea
+src/allure-report
+src/allure-results
+src/test-results
+__pycache__
+src/coverage-reports
+src/logs
+src/.coverage
+src/logs_test
