@@ -1,0 +1,1 @@
+{'id': UUID('4292e962-07a4-4a65-a00d-b4e110c6e331'), 'content': 'Уникальный Игровой Ноутбук', 'description': 'base test description', 'id_category': UUID('a28e4b3b-8d91-4878-8e7c-f8f38d8dcc65'), 'price': 500, 'id_seller': UUID('f02a3ef7-98d8-46e1-a835-79b30467e42f'), 'date_created': datetime.datetime(2026, 11, 17, 23, 26, 21, 877633)}

@@ -1,0 +1,1 @@
+{'id': UUID('5e7f0e27-2e1d-4264-b903-98232f974c37'), 'content': 'Продам Ноутбук_d9c8fb недорого', 'description': 'base test description', 'id_category': UUID('ac7112f6-a080-441c-b418-77f8342e9da6'), 'price': 500, 'id_seller': UUID('ff9783ab-8b2d-465a-a4dd-046b130bdf06'), 'date_created': datetime.datetime(2026, 11, 17, 23, 27, 23, 338954)}
