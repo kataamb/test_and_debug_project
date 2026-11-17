@@ -1,4 +1,4 @@
-name: CI/CD Pipeline - Lab 2
+name: CI/CD Pipeline 
 
 on:
   push:
@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ main, master ]
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   # ==================== ЭТАП 0: ПОДНЯТИЕ И ПРОВЕРКА БД ====================
@@ -151,3 +154,10 @@ jobs:
         with:
           name: allure-report-${{ github.run_number }}
           path: allure-report/
+
+      - name: Deploy Allure Report to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./allure-report
+          publish_branch: gh-pages
