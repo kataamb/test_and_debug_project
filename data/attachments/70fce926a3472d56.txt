@@ -1,0 +1,1 @@
+id=UUID('bff5aca8-a807-4b76-96a5-45d660b67a14') nickname='test_user' fio='Иванов Иван Иванович' email='ivan@example.com' phone_number='+79991112233' password='secure_password123'

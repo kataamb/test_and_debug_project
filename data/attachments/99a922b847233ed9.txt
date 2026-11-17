@@ -1,0 +1,1 @@
+id=UUID('c0e428d8-1de7-4bcc-b3df-f64d5c06709c') nickname='lo_cd842ecf' fio='Иванов Иван Иванович' email='logout_cd842ecf@example.com' phone_number='+79991112233' password='secure_password123'
