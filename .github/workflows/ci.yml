@@ -132,22 +132,26 @@ jobs:
 
       - name: Merge results and Generate Allure Report
         run: |
-          npm install -g allure-commandline
-          mkdir -p merged-results
-
-          if [ -d "allure-history/history" ]; then
-            cp -r allure-history/history merged-results/history
-          fi
-
-          for dir in $(find artifacts -type d -name "allure-results*"); do
-            cp -rn "$dir"/. merged-results/
-          done
-
-          allure generate merged-results/ -o allure-report --clean
-
-          mkdir -p allure-history
-          rm -rf allure-history/history
-          cp -r allure-report/history allure-history/history
+            npm install -g allure-commandline
+            mkdir -p merged-results
+            
+            if [ -d "allure-history/history" ]; then
+              cp -r allure-history/history merged-results/history
+            fi
+            
+            for dir in artifacts/allure-results-*; do
+              if [ -d "$dir" ]; then
+                echo "Copying from $dir"
+                cp -r "$dir"/. merged-results/
+              fi
+            done
+            
+            ls -la merged-results/
+            allure generate merged-results/ -o allure-report --clean
+            
+            mkdir -p allure-history
+            rm -rf allure-history/history
+            cp -r allure-report/history allure-history/history
 
       - name: Upload Final Allure Report
         uses: actions/upload-artifact@v4
