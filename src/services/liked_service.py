@@ -7,7 +7,6 @@ from abstract_repositories.iadvert_repository import IAdvertRepository
 from abstract_repositories.iuser_repository import IUserRepository
 from uuid import UUID
 
-from errors.error_services import CategoryNotFound, UserNotFound, AdvertNotFound, AdvertUserNotOwn
 
 
 

@@ -1,0 +1,11 @@
+services:
+  bench_runner:
+    build:
+      context: ..
+      dockerfile: Dockerfile.test
+    network_mode: host
+    cpus: 1.0
+    volumes:
+      - .:/app/benchmark
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:1234@localhost:5438/adverts_db

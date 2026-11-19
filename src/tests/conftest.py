@@ -190,6 +190,14 @@ def integration_advert_repo(test_db_session):
     from repositories.advert_repository import AdvertsRepository
     from sql_builders.advert_sql_builder import AdvertsSqlBuilder
     return AdvertsRepository(session=test_db_session, builder=AdvertsSqlBuilder())
+    
+    
+    
+def pytest_collection_modifyitems(config, items):
+    if os.getenv("SKIP_TESTS") == "true":
+        skip_marker = pytest.mark.skip(reason="Skipped due to previous stage failure")
+        for item in items:
+            item.add_marker(skip_marker)
 
 
 

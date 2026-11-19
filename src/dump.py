@@ -5,7 +5,7 @@ import sys
 IGNORED_DIRS = {
     '__pycache__', '.pytest_cache', '.mypy_cache', '.ruff_cache',
     '.git', '.idea', '.vscode', 'allure-results', 'htmlcov',
-    '.venv', 'venv', 'node_modules', 'dist', 'build', '.tox',
+    '.venv', 'venv', 'node_modules', 'dist', 'build', '.tox', 'logs', 'coverage-reports', 	'test-results', 'logs_test'
 }
 
 # Расширения, которые в текстовом режиме пропускаем

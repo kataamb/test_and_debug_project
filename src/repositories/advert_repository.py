@@ -17,7 +17,7 @@ class AdvertsRepository(IAdvertRepository):
             sql, params = self.builder.create(advert)
             result = await self.session.execute(sql, params)
             row = result.mappings().first()
-            print(row)
+            #print(row)
             await self.session.commit()
             if row:
                 return Advert(**row)

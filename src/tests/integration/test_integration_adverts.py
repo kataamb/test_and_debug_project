@@ -12,7 +12,6 @@ from sql_builders.advert_sql_builder import AdvertsSqlBuilder
 from sql_builders.category_sql_builder import CategorySqlBuilder
 from sql_builders.user_sql_builder import UserSqlBuilder
 
-from api_v1.dto.advert_dto import AdvertUpdatePartialDTO
 from errors.error_services import (
     UserNotFound,
     AdvertNotFound,

@@ -564,10 +564,3 @@ class TestPartialUpdateAdvert:
             mock_repo_advert.get_by_id.assert_awaited_once_with(advert_id)
             mock_repo_advert.is_created.assert_awaited_once_with(user_id, advert_id)
             mock_repo_advert.partial_update_advert.assert_not_awaited()
-
-    @allure.title("partial_update_advert: успешное обновление")
-    @allure.severity(allure.severity_level.CRITICAL)
-    async def test_partial_update_success(self, service_advert_london, mock_repo_user, mock_repo_advert):
-        # Arrange
-        with allure.step("Настроить моки для успешного частичного обновления"):
-            user_id, advert_id = uuid.uuid4(), uuid.uuid4

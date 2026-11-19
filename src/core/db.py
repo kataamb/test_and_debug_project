@@ -28,9 +28,10 @@ DATABASES = {
 
 # Создаем движки
 _engines = {
-    role: create_async_engine(url, future=True, echo=False)
+    role: create_async_engine(url, future=True, echo=False, pool_pre_ping=True)
     for role, url in DATABASES.items()
 }
+
 
 # Создаем фабрики сессий
 async_sessionmakers = {
