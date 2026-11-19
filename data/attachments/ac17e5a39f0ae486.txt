@@ -1,1 +1,0 @@
-{'id': UUID('ce211c44-f2f1-4ecc-b758-f2779ce4a48b'), 'content': 'Продам Ноутбук_65269f недорого', 'description': 'base test description', 'id_category': UUID('823b042f-73d8-42cd-982b-b80b810a7d62'), 'price': 500, 'id_seller': UUID('77b49588-b3d0-4e5c-96ef-edfdcfd69b83'), 'date_created': datetime.datetime(2026, 11, 17, 23, 49, 2, 643794)}
